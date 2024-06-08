@@ -58,10 +58,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push-image
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Call webhook to deploy
         run: |
-          curl -X GET "${{ secrets.WEBHOOK_URL }}" \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.WEBHOOK_TOKEN }}""
+          curl -n ${{ secrets.WEBHOOK_URL }} \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer ${{ secrets.WEBHOOK_TOKEN }}'
