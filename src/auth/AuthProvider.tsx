@@ -1,11 +1,15 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { IUser } from "../interfaces/user";
-import { useLoginMutation } from "../redux/services/authApi";
+import { IUser } from "../interfaces/i-user";
+import { useLoginMutation, useLogoutMutation } from "../redux/services/authApi";
+import { ILogin } from "../interfaces/i-auth";
 
-const AuthContext = createContext<any>(null);
+export const AuthContext = createContext<{
+  user: IUser | null;
+  handleLogin: (data: any) => Promise<any>;
+  handleLogout: () => Promise<any>;
+} | null>(null);
 
 export const AuthProvider = ({
   data,
@@ -16,13 +20,13 @@ export const AuthProvider = ({
 }) => {
   const [user, setUser] = useState<IUser | null>(data);
   const [loginApi] = useLoginMutation();
+  const [logoutApi] = useLogoutMutation();
   const navigate = useNavigate();
 
   const value = useMemo(() => {
-    const handleLogin = async (data: any) => {
+    const handleLogin = async (data: ILogin) => {
       try {
-        const result = await loginApi({ ...data }).unwrap();
-
+        const result = await loginApi(data).unwrap();
         setUser(result);
         navigate("/");
         return result;
@@ -34,13 +38,12 @@ export const AuthProvider = ({
 
     const handleLogout = async () => {
       try {
-        setUser(null);
-
-        navigate("/login");
+        await logoutApi("").unwrap();
       } catch (err: any) {
         console.error(err);
-        throw new Error(err);
       }
+      setUser(null);
+      navigate("/login");
     };
 
     return {
@@ -50,8 +53,4 @@ export const AuthProvider = ({
     };
   }, [loginApi, navigate, user]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  return useContext(AuthContext);
 };

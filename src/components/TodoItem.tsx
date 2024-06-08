@@ -1,98 +1,88 @@
-import { Badge, Box, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
-import { useTransition } from "react";
-import { FaCheckCircle } from "react-icons/fa";
-import { MdDelete } from "react-icons/md";
-import { ITodo } from "../interfaces/todo";
-import {
-  useDeleteTodoMutation,
-  useUpdateTodoMutation,
-} from "../redux/services/todoApi";
+import { Badge, Divider, Flex, Text } from "@chakra-ui/react";
+import { MdDelete, MdOpenInNew } from "react-icons/md";
+import { ITodo } from "../interfaces/i-todo";
+import * as dateFns from "date-fns";
 interface Props {
   todo: ITodo;
-  onSuccess: () => void;
+  setDeleteId: (id: string) => void;
+  setUpdateItem: (item: ITodo) => void;
 }
-function TodoItem({ todo, onSuccess }: Props) {
-  const toast = useToast();
-  const [isUpdating, setIsUpdating] = useTransition();
-  const [isDeleting, setIsDeleting] = useTransition();
 
-  const [updateTodo] = useUpdateTodoMutation();
-  const [deleteTodo] = useDeleteTodoMutation();
+function formatDate(date: string): string {
+  return dateFns.formatDate(date, "yyyy-MM-dd");
+}
 
-  const doUpdate = () => {
-    setIsDeleting(() => {
-      return toast.promise(
-        updateTodo({
-          id: todo._id,
-          dto: { title: todo.title, body: todo.body },
-        })
-          .unwrap()
-          .then(() => {
-            onSuccess();
-          }),
-        {
-          success: { title: "Success", description: "Update todo success" },
-          error: { title: "Error", description: "Something wrong" },
-          loading: { title: "Processing...", description: "Please wait" },
-        }
-      );
-    });
-  };
-
-  const doDelete = () => {
-    setIsUpdating(() => {
-      return toast.promise(
-        deleteTodo(todo._id)
-          .unwrap()
-          .then(() => {
-            onSuccess();
-          }),
-        {
-          success: { title: "Success", description: "Delete todo success" },
-          error: { title: "Error", description: "Something wrong" },
-          loading: { title: "Processing...", description: "Please wait" },
-        }
-      );
-    });
-  };
-
+function TodoItem({ todo, setDeleteId, setUpdateItem }: Props) {
   return (
-    <Flex gap={2} alignItems={"center"}>
-      <Flex
-        flex={1}
-        alignItems={"center"}
-        border={"1px"}
-        borderColor={"gray.600"}
-        p={2}
-        borderRadius={"lg"}
-        justifyContent={"space-between"}
-      >
-        <Text
-          color={todo.completed ? "green.200" : "yellow.100"}
-          textDecoration={todo.completed ? "line-through" : "none"}
+    <Flex
+      gap={2}
+      flexDir={"column"}
+      border={"1px"}
+      borderColor={"gray.600"}
+      borderRadius={"lg"}
+      p={2}
+    >
+      <Flex flexDir={"column"}>
+        <Flex
+          flex={1}
+          alignItems={"center"}
+          borderRadius={"lg"}
+          justifyContent={"space-between"}
         >
-          {todo.body}
-        </Text>
-        {todo.completed && (
-          <Badge ml="1" colorScheme="green">
-            Done
-          </Badge>
-        )}
-        {!todo.completed && (
-          <Badge ml="1" colorScheme="yellow">
-            In Progress
-          </Badge>
-        )}
+          <Text fontWeight={"bold"}>{todo.title}</Text>
+          {todo.completed && (
+            <Badge ml="1" colorScheme="green">
+              Done
+            </Badge>
+          )}
+          {!todo.completed && (
+            <Badge ml="1" colorScheme="yellow">
+              In Progress
+            </Badge>
+          )}
+        </Flex>
+        <Divider my={2}></Divider>
+        <Text>{todo.body}</Text>
       </Flex>
-      <Flex gap={2} alignItems={"center"}>
-        <Box color={"green.500"} cursor={"pointer"} onClick={() => doUpdate()}>
-          {!isUpdating && <FaCheckCircle size={20} />}
-          {isUpdating && <Spinner size={"sm"} />}
-        </Box>
-        <Box color={"red.500"} cursor={"pointer"} onClick={() => doDelete()}>
-          {!isDeleting && <MdDelete size={25} />}
-          {isDeleting && <Spinner size={"sm"} />}
-        </Box>
+      <Flex gap={2} alignItems={"center"} justifyContent={"space-between"}>
+        <div className="w-full">
+          {todo.start_date && todo.end_date ? (
+            <Text fontSize={"small"} color={"gray.400"}>
+              Schedule: {formatDate(todo.start_date)} -{" "}
+              {formatDate(todo.end_date)}
+            </Text>
+          ) : todo.start_date ? (
+            <Text fontSize={"small"} color={"gray.400"}>
+              Schedule: {formatDate(todo.start_date)} - Now{" "}
+            </Text>
+          ) : todo.end_date ? (
+            <Text fontSize={"small"} color={"gray.400"}>
+              Deadline: {formatDate(todo.end_date)}{" "}
+            </Text>
+          ) : (
+            <></>
+          )}
+        </div>
+        <Flex gap={2}>
+          <Flex
+            color={"green.500"}
+            cursor={"pointer"}
+            onClick={() => setUpdateItem(todo)}
+            alignItems={"center"}
+          >
+            <MdOpenInNew size={20} />
+            <Text ml={2}>Edit</Text>
+          </Flex>
+          <Flex
+            color={"red.500"}
+            cursor={"pointer"}
+            onClick={() => setDeleteId(todo._id)}
+            alignItems={"center"}
+          >
+            <MdDelete size={25} />
+            <Text ml={2}>Delete</Text>
+          </Flex>
+        </Flex>
       </Flex>
     </Flex>
   );

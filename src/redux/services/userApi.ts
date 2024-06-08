@@ -1,8 +1,9 @@
+import { IProfile } from "../../interfaces/i-user";
 import { apiSlice } from "../apiSlice";
 
 const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    profile: builder.query({
+    profile: builder.query<IProfile, any>({
       query: () => ({
         url: "user/profile",
       }),

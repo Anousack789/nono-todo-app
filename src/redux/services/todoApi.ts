@@ -1,4 +1,4 @@
-import { CreateTodo, ITodo } from "../../interfaces/todo";
+import { CreateTodo, ITodo } from "../../interfaces/i-todo";
 import { apiSlice } from "../apiSlice";
 
 const todoApi = apiSlice.injectEndpoints({
@@ -31,7 +31,12 @@ const todoApi = apiSlice.injectEndpoints({
         method: "PUT",
       }),
     }),
-
+    competedTodo: builder.mutation<any, string>({
+      query: (id) => ({
+        url: "todo/" + id,
+        method: "PATCH",
+      }),
+    }),
     deleteTodo: builder.mutation<any, string>({
       query: (id) => ({
         url: "todo/" + id,
@@ -46,5 +51,6 @@ export const {
   useGetTodoByIdQuery,
   useCreateTodoMutation,
   useDeleteTodoMutation,
+  useCompetedTodoMutation,
   useUpdateTodoMutation,
 } = todoApi;

@@ -1,7 +1,22 @@
-import { useLoginMutation } from "../redux/services/authApi";
-import { useToast, Input, Button, Container, Flex } from "@chakra-ui/react";
-import { useForm, SubmitHandler } from "react-hook-form";
-
+import {
+  Button,
+  Container,
+  Flex,
+  Input,
+  useToast,
+  Box,
+  FormLabel,
+  FormControl,
+  FormErrorMessage,
+  Divider,
+  Text,
+} from "@chakra-ui/react";
+import { useContext, useRef, useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { AuthContext } from "../auth/AuthProvider";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+import { NavLink } from "react-router-dom";
+import AppConfig from "../AppConfig";
 type LoginType = {
   username: string;
   password: string;
@@ -9,30 +24,97 @@ type LoginType = {
 
 function Login() {
   const toast = useToast();
-  const [login] = useLoginMutation();
 
-  const { register, handleSubmit } = useForm<LoginType>();
+  const auth = useContext(AuthContext);
+  const [token, setToken] = useState("");
+
+  const captchaRef = useRef(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginType>();
 
   const onSubmit: SubmitHandler<LoginType> = (data) => {
-    toast.promise(login(data).unwrap(), {
-      success: { title: "Success", description: "Login success" },
-      error: (err) => {
-        console.error(err);
-        return { title: "Error", description: "Something wrong" };
-      },
-      loading: { title: "Promise pending", description: "Please wait" },
-    });
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "Captcha is required",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (auth) {
+      toast.promise(auth.handleLogin(data), {
+        success: { title: "Success", description: "Login success" },
+        error: (err) => {
+          console.error(err);
+          return { title: "Error", description: "Login Failed" };
+        },
+        loading: { title: "Processing...", description: "Please wait" },
+      });
+    }
   };
 
   return (
-    <Container>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Flex flexDir={"column"} columnGap={2}>
-          <Input type="text" {...register("username")} />
-          <Input type="password" {...register("password")} />
-          <Button type="submit">Login</Button>
-        </Flex>
-      </form>
+    <Container
+      minH="100vh"
+      display={"flex"}
+      alignItems={"center"}
+      justifyContent={"center"}
+      w={"100vw"}
+      maxW={"450px"}
+    >
+      <Flex
+        borderWidth="1px"
+        borderRadius="lg"
+        w={"100%"}
+        p={4}
+        flexDir={"column"}
+      >
+        <Box mx={"auto"} my={4}>
+          <img src="/todo-app-logo.png" alt="app_logo" />
+        </Box>
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+          <Flex flexDir={"column"} gap={4}>
+            <FormControl>
+              <FormLabel>Username</FormLabel>
+              <Input
+                type="text"
+                {...register("username", { required: true, minLength: 4 })}
+              />
+              {errors.username && (
+                <FormErrorMessage>Username is required</FormErrorMessage>
+              )}
+            </FormControl>
+            <FormControl>
+              <FormLabel>Password</FormLabel>
+              <Input
+                type="password"
+                {...register("password", { required: true, minLength: 4 })}
+              />
+              {errors.password && (
+                <FormErrorMessage>Password is required</FormErrorMessage>
+              )}
+            </FormControl>
+            <HCaptcha
+              sitekey={AppConfig.CAPTCHA_SITE_KEY}
+              onVerify={setToken}
+              ref={captchaRef}
+            />
+            <Button type="submit">Login</Button>
+          </Flex>
+        </form>
+        <Divider my={4} />
+        <Text mx={"auto"}>
+          Or you don't have account?{" "}
+          <NavLink to={"/register"}>Register</NavLink>
+        </Text>
+      </Flex>
     </Container>
   );
 }
