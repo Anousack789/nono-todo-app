@@ -15,7 +15,10 @@ RUN pnpm install
 
 # Step 6: Copy the rest of the application code
 COPY . .
-
+ARG VITE_API
+ARG VITE_CAPTCHA_SITE_KEY
+ENV VITE_API ${VITE_API}
+ENV VITE_CAPTCHA_SITE_KEY ${VITE_CAPTCHA_SITE_KEY}
 # Step 7: Build the application
 RUN pnpm run build
 
