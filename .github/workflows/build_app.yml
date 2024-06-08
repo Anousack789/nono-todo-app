@@ -40,7 +40,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            "VITE_API=${{ secrets.VITE_API }}, VITE_CAPTCHA_SITE_KEY=${{ secrets.VITE_CAPTCHA_SITE }}"
+            "VITE_API=${{ secrets.VITE_API }}, VITE_CAPTCHA_SITE_KEY=${{ secrets.VITE_CAPTCHA_SITE_KEY }}"
 
       - name: send telegram message on push
         uses: appleboy/telegram-action@master
