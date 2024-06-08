@@ -89,6 +89,7 @@ function TodoForm({ refetch, onCloseForm }: Props) {
         createTodo(data)
           .unwrap()
           .then(() => {
+            onCloseForm();
             dispatch(setTodoUpdateItem(null));
             refetch();
             reset({
