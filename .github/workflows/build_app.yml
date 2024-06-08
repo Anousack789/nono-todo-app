@@ -62,6 +62,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Call webhook to deploy
         run: |
-          curl -X GET ${{ secrets.WEBHOOK_URL }} \
-          -H 'Content-Type: application/json' \
-          -H 'Authorization: Bearer ${{ secrets.WEBHOOK_TOKEN }}'
+          curl -X GET "${{ secrets.WEBHOOK_URL }}" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.WEBHOOK_TOKEN }}""
